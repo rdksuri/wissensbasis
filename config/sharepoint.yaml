@@ -4,10 +4,10 @@
 
 quellen:
   # Pro Eintrag eine SharePoint-Dokumentbibliothek.
-  - name: beispiel                          # Kurzname, wird Ordnername unter wissen/
-    hostname: contoso.sharepoint.com        # TODO: eigenen Mandanten eintragen
-    site_pfad: /sites/Wissen                # TODO: eigene Site eintragen
-    bibliothek: Dokumente                   # Anzeigename oder URL-Name ("Shared Documents")
+  - name: dls                               # Kurzname, wird Ordnername unter wissen/
+    hostname: ksur.sharepoint.com
+    site_pfad: /sites/DLS
+    bibliothek: Dokumente                   # Standardbibliothek; Anzeigename oder URL-Name ("Shared Documents")
     ordner: []                              # leer = ganze Bibliothek, sonst z. B. ["/Richtlinien", "/Handbücher"]
 
 dateitypen:                                 # nur diese Endungen werden übernommen
