@@ -1,0 +1,52 @@
+name: SharePoint-Abgleich
+
+on:
+  schedule:
+    # Werktags 06:17 und 13:17 UTC (Zeitpläne laufen nur auf dem Standard-Branch)
+    - cron: "17 6,13 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      voll:
+        description: "Vollabgleich (alle Dokumente neu laden)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # Änderungen zurück ins Repo schreiben
+  id-token: write   # GitHub-OIDC für Anmeldung ohne Client-Secret
+
+concurrency:
+  group: sharepoint-sync
+  cancel-in-progress: false
+
+jobs:
+  abgleich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: SharePoint abgleichen
+        env:
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}  # leer lassen bei OIDC
+        run: python -m wissensbasis sync ${{ inputs.voll && '--voll' || '' }}
+
+      - name: Änderungen committen
+        run: |
+          git add -A wissen index state
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen."
+            exit 0
+          fi
+          git config user.name "wissensbasis-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "SharePoint-Abgleich $(date -u +%Y-%m-%dT%H:%MZ)" \
+            -m "$(git diff --cached --stat | tail -1)"
+          git push

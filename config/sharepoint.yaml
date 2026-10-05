@@ -1,0 +1,26 @@
+# Konfiguration des SharePoint-Abgleichs.
+# Zugangsdaten gehören NICHT hierher, sondern in GitHub-Secrets/-Variablen
+# (AZURE_TENANT_ID, AZURE_CLIENT_ID, optional AZURE_CLIENT_SECRET).
+
+quellen:
+  # Pro Eintrag eine SharePoint-Dokumentbibliothek.
+  - name: beispiel                          # Kurzname, wird Ordnername unter wissen/
+    hostname: contoso.sharepoint.com        # TODO: eigenen Mandanten eintragen
+    site_pfad: /sites/Wissen                # TODO: eigene Site eintragen
+    bibliothek: Dokumente                   # Anzeigename oder URL-Name ("Shared Documents")
+    ordner: []                              # leer = ganze Bibliothek, sonst z. B. ["/Richtlinien", "/Handbücher"]
+
+dateitypen:                                 # nur diese Endungen werden übernommen
+  - .docx
+  - .pptx
+  - .xlsx
+  - .pdf
+  - .md
+  - .txt
+  - .html
+  - .csv
+
+max_groesse_mb: 50                          # grössere Dateien werden übersprungen
+
+chunks:
+  max_zeichen: 1500                         # Zielgrösse eines Textabschnitts für den Chatbot
