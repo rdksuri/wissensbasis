@@ -9,6 +9,10 @@ quellen:
     site_pfad: /sites/DLS
     bibliothek: Dokumente                   # Standardbibliothek; Anzeigename oder URL-Name ("Shared Documents")
     ordner: []                              # leer = ganze Bibliothek, sonst z. B. ["/Richtlinien", "/Handbücher"]
+    # Variante ohne App-Registrierung: per OneDrive synchronisierter Ordner auf dem PC.
+    # Ist lokaler_pfad gesetzt, liest `import-ordner` diese Quelle statt `sync`.
+    # lokaler_pfad: 'C:\Users\NAME\ksur\DLS - Dokumente'   # TODO: eigenen Pfad eintragen
+    # web_basis: https://ksur.sharepoint.com/sites/DLS/Shared Documents  # für Links zum Original
 
 dateitypen:                                 # nur diese Endungen werden übernommen
   - .docx

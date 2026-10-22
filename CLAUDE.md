@@ -28,4 +28,6 @@ und Grundlage weiterer Projekte (u. a. eines Chatbots in einem zweiten Repo).
 ## Befehle
 - `python -m wissensbasis sync [--voll]` – SharePoint abgleichen (braucht
   `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, ggf. `AZURE_CLIENT_SECRET`)
+- `python -m wissensbasis import-ordner` – per OneDrive synchronisierte Ordner
+  (`lokaler_pfad` in der Konfiguration) importieren, siehe `docs/ordner-import.md`
 - `python -m wissensbasis index` – Index aus `wissen/` neu erzeugen

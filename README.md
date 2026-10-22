@@ -22,9 +22,21 @@ SharePoint ──(Graph-API, Delta)──▶ wissen/**.md ──▶ index/manife
 | `state/` | Delta-Token und Ordnerstruktur je Quelle (nicht von Hand ändern) |
 | `wissensbasis/` | Python-Code für Abgleich und Index |
 | `docs/einrichtung.md` | Einmalige Einrichtung (Entra-App, Berechtigungen, GitHub-Variablen) |
+| `docs/ordner-import.md` | Alternative ohne App-Registrierung: Import vom PC per OneDrive-Synchronisation |
+| `skripte/import.ps1` | Windows-Skript für den regelmässigen Ordner-Import |
 | `docs/schnittstelle.md` | Datenformat für das Chatbot-Repository |
 
 ## Betrieb
+
+Zwei Wege, SharePoint einzulesen (je Quelle einer):
+
+| | Graph-Abgleich (`sync`) | Ordner-Import (`import-ordner`) |
+|---|---|---|
+| Voraussetzung | App-Registrierung durch die IT | OneDrive-Synchronisation mit eigenem Konto |
+| Läuft | automatisch in GitHub Actions | per Aufgabenplanung auf dem PC, solange er an ist |
+| Anleitung | [`docs/einrichtung.md`](docs/einrichtung.md) | [`docs/ordner-import.md`](docs/ordner-import.md) |
+
+Graph-Abgleich:
 
 - **Automatisch:** werktags 06:17 und 13:17 UTC (`.github/workflows/sharepoint-sync.yml`).
 - **Manuell:** GitHub → *Actions* → *SharePoint-Abgleich* → *Run workflow*
@@ -34,6 +46,7 @@ SharePoint ──(Graph-API, Delta)──▶ wissen/**.md ──▶ index/manife
   pip install -r requirements-dev.txt
   export AZURE_TENANT_ID=… AZURE_CLIENT_ID=… AZURE_CLIENT_SECRET=…
   python -m wissensbasis sync      # abgleichen + Index bauen
+  python -m wissensbasis import-ordner   # lokal synchronisierte Ordner importieren
   python -m wissensbasis index     # nur Index neu bauen
   python -m pytest -q              # Tests (ohne SharePoint-Zugang)
   ```

@@ -21,6 +21,9 @@ concurrency:
 
 jobs:
   abgleich:
+    # Läuft erst, wenn die App-Registrierung eingerichtet ist (docs/einrichtung.md).
+    # Bis dahin: Import vom PC per skripte/import.ps1 (docs/ordner-import.md).
+    if: vars.AZURE_CLIENT_ID != ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
