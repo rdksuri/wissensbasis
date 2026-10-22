@@ -12,6 +12,8 @@ unangetastet.
 
 Quellen:
 - https://support.microsoft.com/office/save-disk-space-with-onedrive-files-on-demand-for-windows-0e6860d3-d9f3-4971-b321-7092438fb38e
+- https://support.microsoft.com/office/save-disk-space-with-onedrive-files-on-demand-for-mac-529f6d53-e572-4922-a585-e7a318c135f0
+- macOS SF_DATALESS: https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/stat.h
 - https://learn.microsoft.com/windows/win32/fileio/file-attribute-constants
 - https://learn.microsoft.com/windows-server/administration/windows-commands/attrib
 """
@@ -36,18 +38,41 @@ log = logging.getLogger(__name__)
 # Windows-Dateiattribute für Cloud-Platzhalter
 RECALL_ON_DATA_ACCESS = 0x00400000  # Inhalt liegt nicht lokal
 PINNED = 0x00080000                 # „Immer auf diesem Gerät behalten“
+# macOS (File Provider): Datei ist ein Platzhalter ohne lokalen Inhalt
+SF_DATALESS = 0x40000000
+
+_mac_freigabe_aktiv = True
 
 
 def nur_online(pfad: Path) -> bool:
-    """True, wenn die Datei ein reiner Cloud-Platzhalter ist (nur Windows)."""
-    attribute = getattr(os.stat(pfad), "st_file_attributes", 0)
-    return bool(attribute & RECALL_ON_DATA_ACCESS) and not attribute & PINNED
+    """True, wenn die Datei ein reiner Cloud-Platzhalter ist (Windows und macOS)."""
+    st = os.stat(pfad)
+    attribute = getattr(st, "st_file_attributes", 0)
+    if attribute:
+        return bool(attribute & RECALL_ON_DATA_ACCESS) and not attribute & PINNED
+    return bool(getattr(st, "st_flags", 0) & SF_DATALESS)
 
 
 def speicher_freigeben(pfad: Path) -> None:
     """Setzt die Datei wieder auf „Nur online verfügbar“."""
+    global _mac_freigabe_aktiv
     if sys.platform == "win32":
         subprocess.run(["attrib", "+U", "-P", str(pfad)], check=False, capture_output=True)
+    elif sys.platform == "darwin" and _mac_freigabe_aktiv:
+        # fileproviderctl ist nicht offiziell dokumentiert: schlägt es fehl,
+        # einmal warnen und für den Rest des Laufs nicht weiter versuchen.
+        try:
+            r = subprocess.run(["fileproviderctl", "evict", str(pfad)],
+                               check=False, capture_output=True, text=True, timeout=60)
+            fehler = r.returncode != 0 and (r.stderr or r.stdout).strip()
+        except (OSError, subprocess.TimeoutExpired) as e:
+            fehler = str(e)
+        if fehler:
+            _mac_freigabe_aktiv = False
+            log.warning(
+                "Speicher konnte nicht automatisch freigegeben werden (%s). Gelesene Dateien "
+                "bleiben lokal; im Finder per Rechtsklick → „Speicherplatz freigeben“ "
+                "wieder auf nur online setzen.", fehler)
 
 
 def dokument_id(quelle: str, rel_pfad: str) -> str:

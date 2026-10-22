@@ -23,7 +23,7 @@ SharePoint ──(Graph-API, Delta)──▶ wissen/**.md ──▶ index/manife
 | `wissensbasis/` | Python-Code für Abgleich und Index |
 | `docs/einrichtung.md` | Einmalige Einrichtung (Entra-App, Berechtigungen, GitHub-Variablen) |
 | `docs/ordner-import.md` | Alternative ohne App-Registrierung: Import vom PC per OneDrive-Synchronisation |
-| `skripte/import.ps1` | Windows-Skript für den regelmässigen Ordner-Import |
+| `skripte/` | Skripte für den regelmässigen Ordner-Import (Windows: `import.ps1`, macOS: `import.sh`, `mac-zeitplan-einrichten.sh`) |
 | `docs/schnittstelle.md` | Datenformat für das Chatbot-Repository |
 
 ## Betrieb
@@ -33,7 +33,7 @@ Zwei Wege, SharePoint einzulesen (je Quelle einer):
 | | Graph-Abgleich (`sync`) | Ordner-Import (`import-ordner`) |
 |---|---|---|
 | Voraussetzung | App-Registrierung durch die IT | OneDrive-Synchronisation mit eigenem Konto |
-| Läuft | automatisch in GitHub Actions | per Aufgabenplanung auf dem PC, solange er an ist |
+| Läuft | automatisch in GitHub Actions | per Aufgabenplanung (Windows) bzw. launchd (macOS), solange der Rechner an ist |
 | Anleitung | [`docs/einrichtung.md`](docs/einrichtung.md) | [`docs/ordner-import.md`](docs/ordner-import.md) |
 
 Graph-Abgleich:

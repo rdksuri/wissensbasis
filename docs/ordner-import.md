@@ -1,4 +1,4 @@
-# Import vom PC (OneDrive-Synchronisation)
+# Import vom PC/Mac (OneDrive-Synchronisation)
 
 Variante ohne App-Registrierung: Die SharePoint-Bibliothek wird mit deinem
 eigenen Konto auf den PC synchronisiert, ein Skript wandelt sie regelmässig
@@ -6,14 +6,16 @@ in die Wissensbasis um. Läuft nur, solange der PC an ist.
 
 ## 1. Einmalig: Bibliothek synchronisieren
 
-1. Bibliothek im Browser öffnen, z. B.
-   `https://ksur.sharepoint.com/sites/DLS/Shared Documents`.
-2. Oben auf **Synchronisieren** klicken und im OneDrive-Client bestätigen.
-   Tipp: Nur die benötigten Ordner synchronisieren (Rechtsklick auf den
-   Ordner → *Verknüpfung zu „Meine Dateien“ hinzufügen* bzw. in den
-   OneDrive-Einstellungen *Ordner auswählen*).
-3. Im Explorer erscheint ein Ordner wie
-   `C:\Users\<NAME>\ksur\DLS - Dokumente`. Diesen Pfad notieren.
+1. In Teams den Kanal bzw. die Registerkarte *Dateien* öffnen (Teams-Dateien
+   liegen technisch in der SharePoint-Bibliothek des Teams).
+2. Ordner oder Bibliothek auswählen → **„Verknüpfung zu OneDrive
+   hinzufügen“** (alternativ in SharePoint *Synchronisieren*).
+3. Der Ordner erscheint im geschäftlichen OneDrive, z. B.
+   - macOS: `~/Library/CloudStorage/OneDrive-<Organisation>/INT-Rettungsdienst - Dokumente`
+   - Windows: `C:\Users\<NAME>\OneDrive - <Organisation>\INT-Rettungsdienst - Dokumente`
+4. Für `web_basis` (Links zum Original): in Teams *…* → **„In SharePoint
+   öffnen“**; die Adresse bis einschliesslich `Shared%20Documents` verwenden,
+   ohne `/Forms/AllItems.aspx`.
 
 **Speicherplatz:** Mit „Dateien bei Bedarf“ (Standard) liegen nur Platzhalter
 auf der Platte. Der Import lädt eine Datei nur, wenn sie neu oder geändert
@@ -22,6 +24,18 @@ belegt nur der umgewandelte Text Platz. Dateien, die du selbst mit „Immer
 auf diesem Gerät behalten“ markiert hast, bleiben unverändert.
 
 ## 2. Einmalig: Python und Repository
+
+**macOS** (Terminal):
+
+```bash
+xcode-select --install          # Git und Python 3, falls noch nicht vorhanden
+git clone https://github.com/rdksuri/wissensbasis.git
+cd wissensbasis
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+```
+
+**Windows** (PowerShell):
 
 ```powershell
 winget install Python.Python.3.12 Git.Git
@@ -33,27 +47,61 @@ python -m venv .venv
 
 ## 3. Konfiguration
 
-In `config/sharepoint.yaml` bei der Quelle `dls` die beiden Zeilen
-einkommentieren und anpassen:
+In `config/sharepoint.yaml` bei der Quelle `lokaler_pfad` und `web_basis`
+setzen, z. B.:
 
 ```yaml
-    lokaler_pfad: 'C:\Users\NAME\ksur\DLS - Dokumente'
-    web_basis: https://ksur.sharepoint.com/sites/DLS/Shared Documents
+    lokaler_pfad: '~/Library/CloudStorage/OneDrive-ORGANISATION/INT-Rettungsdienst - Dokumente'   # macOS
+    # lokaler_pfad: 'C:\Users\NAME\OneDrive - …\INT-Rettungsdienst - Dokumente'                    # Windows
+    web_basis: https://ksur.sharepoint.com/sites/INT-Rettungsdienst/Shared%20Documents
 ```
+
+Pfad ermitteln: **macOS** – im Finder Rechtsklick mit gedrückter
+Wahltaste (⌥) auf den Ordner → „… als Pfadname kopieren“; `~` steht für den
+eigenen Benutzerordner. **Windows** – Ordner im Explorer öffnen, in die
+Adresszeile klicken.
 
 `web_basis` ist die Browser-Adresse der Bibliothek (ohne `/Forms/…`); daraus
 entstehen die Links zum Original, die der Chatbot als Quelle anzeigt.
 
 ## 4. Testlauf
 
-```powershell
-.venv\Scripts\python -m wissensbasis import-ordner
+```bash
+.venv/bin/python -m wissensbasis import-ordner          # macOS
+.venv\Scripts\python -m wissensbasis import-ordner      # Windows
 ```
+
+macOS fragt beim ersten Zugriff eventuell, ob Terminal bzw. Python auf
+Dateien in OneDrive zugreifen darf – mit „Erlauben“ bestätigen.
 
 Die Zusammenfassung zeigt neue, aktualisierte, gelöschte und übersprungene
 Dateien sowie Fehler. Ergebnis: `wissen\dls\…` und `index\`.
 
-## 5. Regelmässig ausführen (Aufgabenplanung)
+## 5. Regelmässig ausführen
+
+### macOS (launchd)
+
+```bash
+skripte/mac-zeitplan-einrichten.sh            # stündlich, nur lokal
+skripte/mac-zeitplan-einrichten.sh --push     # stündlich, mit Hochladen zu GitHub
+skripte/mac-zeitplan-einrichten.sh --entfernen
+```
+
+Läuft, solange du am Mac angemeldet bist; Protokoll in `import.log`.
+
+**Speicher freigeben auf dem Mac:** Der Import erkennt Platzhalter
+zuverlässig und versucht, gelesene Dateien mit `fileproviderctl evict`
+wieder auf „nur online“ zu setzen. Dieser Befehl ist von Apple nicht
+offiziell dokumentiert. Klappt er nicht, steht eine Warnung im Protokoll,
+der Import läuft trotzdem weiter. Dann im Finder Rechtsklick auf den Ordner →
+**„Speicherplatz freigeben“**. Prüfen kannst du es nach dem ersten Lauf mit
+einer einzelnen Datei:
+
+```bash
+fileproviderctl evict ~/Library/CloudStorage/OneDrive-…/INT-Rettungsdienst\ -\ Dokumente/<Datei>
+```
+
+### Windows (Aufgabenplanung)
 
 Stündlich werktags von 7 bis 18 Uhr, mit Hochladen zu GitHub:
 
@@ -96,6 +144,12 @@ den synchronisierten Ordner legen; `.csv` und `.xlsx` werden mit importiert.
   <https://support.microsoft.com/office/sync-sharepoint-and-teams-files-with-your-computer-6de9ede8-5b6e-4503-80b2-6190f3354a88>
 - Microsoft, *Dateien bei Bedarf*:
   <https://support.microsoft.com/office/save-disk-space-with-onedrive-files-on-demand-for-windows-0e6860d3-d9f3-4971-b321-7092438fb38e>
+- Microsoft, *Dateien bei Bedarf für Mac*:
+  <https://support.microsoft.com/office/save-disk-space-with-onedrive-files-on-demand-for-mac-529f6d53-e572-4922-a585-e7a318c135f0>
+- Apple, xnu `sys/stat.h` (`SF_DATALESS`):
+  <https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/stat.h>
+- Apple, *launchd / Hintergrundaufgaben*:
+  <https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html>
 - Microsoft, *Dateiattribute* (`RECALL_ON_DATA_ACCESS`, `PINNED`):
   <https://learn.microsoft.com/windows/win32/fileio/file-attribute-constants>
 - Microsoft, `attrib`: <https://learn.microsoft.com/windows-server/administration/windows-commands/attrib>

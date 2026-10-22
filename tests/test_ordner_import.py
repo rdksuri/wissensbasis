@@ -122,3 +122,30 @@ def test_fehlender_ordner(umgebung, tmp_path):
     *_, lauf, _, _ = umgebung
     with pytest.raises(FileNotFoundError):
         lauf({"name": "x", "lokaler_pfad": str(tmp_path / "gibtsnicht")})
+
+
+def test_platzhalter_erkennung_macos(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from wissensbasis import ordner_import as oi
+    f = tmp_path / "a.txt"
+    f.write_text("x")
+    monkeypatch.setattr(oi.os, "stat", lambda p: SimpleNamespace(st_flags=oi.SF_DATALESS))
+    assert oi.nur_online(f)
+    monkeypatch.setattr(oi.os, "stat", lambda p: SimpleNamespace(st_flags=0))
+    assert not oi.nur_online(f)
+
+
+def test_mac_freigabe_fehler_nur_einmal(tmp_path, monkeypatch, caplog):
+    from types import SimpleNamespace
+
+    from wissensbasis import ordner_import as oi
+    aufrufe = []
+    monkeypatch.setattr(oi.sys, "platform", "darwin")
+    monkeypatch.setattr(oi, "_mac_freigabe_aktiv", True)
+    monkeypatch.setattr(oi.subprocess, "run", lambda cmd, **kw: aufrufe.append(cmd)
+                        or SimpleNamespace(returncode=1, stderr="unknown command", stdout=""))
+    oi.speicher_freigeben(tmp_path / "a")
+    oi.speicher_freigeben(tmp_path / "b")
+    assert len(aufrufe) == 1 and aufrufe[0][:2] == ["fileproviderctl", "evict"]
+    assert "Speicherplatz freigeben" in caplog.text
