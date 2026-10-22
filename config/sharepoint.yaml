@@ -13,8 +13,7 @@ quellen:
     ordner: []                              # leer = alle Kanäle, sonst z. B. ["/Allgemein"]
     # TODO: Pfad im Explorer prüfen (Ordnername „OneDrive - …“ hängt von der Organisation ab)
     lokaler_pfad: 'C:\Users\NAME\OneDrive - ORGANISATION\INT-Rettungsdienst - Dokumente'
-    # TODO: prüfen, ob die Bibliothek im Link „Shared Documents“ heisst (siehe docs/ordner-import.md)
-    web_basis: https://ksur.sharepoint.com/sites/INT-Rettungsdienst/Shared Documents
+    web_basis: https://ksur.sharepoint.com/sites/INT-Rettungsdienst/Shared%20Documents   # bestätigt
 
   - name: dls                               # Kurzname, wird Ordnername unter wissen/
     hostname: ksur.sharepoint.com
