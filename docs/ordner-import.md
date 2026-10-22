@@ -25,7 +25,16 @@ auf diesem Gerät behalten“ markiert hast, bleiben unverändert.
 
 ## 2. Einmalig: Python und Repository
 
-**macOS** (Terminal):
+**macOS – automatisch (empfohlen):** Ein Befehl im Terminal installiert
+Python (über [uv](https://docs.astral.sh/uv/), ohne Admin-Rechte), holt die
+Wissensbasis nach `~/wissensbasis`, findet den OneDrive-Ordner, legt
+`config/lokal.yaml` an und startet den ersten Import (Schritte 2–4):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rdksuri/wissensbasis/main/skripte/mac-einrichten.sh | bash
+```
+
+**macOS – von Hand** (Terminal):
 
 Benötigt wird **Python 3.10 bis 3.14** (das von macOS mitgelieferte
 `python3` ist meist 3.9 und zu alt). Installer von
