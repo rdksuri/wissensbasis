@@ -27,11 +27,15 @@ auf diesem Gerät behalten“ markiert hast, bleiben unverändert.
 
 **macOS** (Terminal):
 
+Benötigt wird **Python 3.10 bis 3.14** (das von macOS mitgelieferte
+`python3` ist meist 3.9 und zu alt). Installer von
+<https://www.python.org/downloads/macos/> oder `brew install python@3.12`.
+
 ```bash
-xcode-select --install          # Git und Python 3, falls noch nicht vorhanden
+xcode-select --install          # Git, falls noch nicht vorhanden
 git clone https://github.com/rdksuri/wissensbasis.git
 cd wissensbasis
-python3 -m venv .venv
+python3.12 -m venv .venv        # bzw. die installierte Version
 .venv/bin/pip install -r requirements.txt
 ```
 
