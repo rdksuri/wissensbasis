@@ -36,7 +36,7 @@ uv --version
 schritt "2/5 Wissensbasis nach $ZIEL holen"
 if [[ -d "$ZIEL/.git" ]]; then
   git -C "$ZIEL" fetch origin "$BRANCH"
-  if ! git -C "$ZIEL" merge --ff-only "origin/$BRANCH"; then
+  if ! git -C "$ZIEL" merge --ff-only "origin/$BRANCH" 2>/dev/null; then
     # z. B. nach bereinigter Historie auf GitHub: Programmstand übernehmen.
     # Unberührt bleiben config/lokal.yaml, .venv und die Dokumente in OneDrive;
     # wissen/ und index/ werden im Schritt 5 neu erzeugt.
@@ -67,7 +67,7 @@ schritt "3/5 Python 3.12 und Abhängigkeiten installieren"
 uv pip install --python .venv/bin/python -q -r requirements.txt
 .venv/bin/python --version
 
-schritt "4/5 OneDrive-Ordner „$ORDNER“ suchen"
+schritt "4/5 OneDrive-Ordner „${ORDNER}“ suchen"
 if [[ -f config/lokal.yaml ]]; then
   echo "config/lokal.yaml existiert bereits – unverändert gelassen."
 else
