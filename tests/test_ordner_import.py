@@ -160,3 +160,17 @@ def test_lokale_config_wird_zusammengefuehrt(tmp_path):
         "quellen:\n  - name: a\n    lokaler_pfad: ~/OD\n", encoding="utf-8")
     q = lade_config(tmp_path / "sharepoint.yaml")["quellen"][0]
     assert q == {"name": "a", "web_basis": "https://x", "lokaler_pfad": "~/OD"}
+
+
+def test_ordnerfilter_beim_import(umgebung):
+    ordner, basis, lauf, *_ = umgebung
+    schreibe(ordner / "Allgemein" / "a.txt", "a")
+    schreibe(ordner / "Allgemein" / "Unter" / "b.txt", "b")
+    schreibe(ordner / "AllgemeinAlt" / "c.txt", "c")
+    schreibe(ordner / "Privat" / "d.txt", "d")
+    schreibe(ordner / "Tief" / "Ziel" / "e.txt", "e")
+    schreibe(ordner / "Tief" / "Anders" / "f.txt", "f")
+    q = {"name": "dls", "lokaler_pfad": str(ordner), "ordner": ["/Allgemein", "/Tief/Ziel"]}
+    lauf(q)
+    assert dateien(basis) == ["dls/Allgemein/Unter/b.txt.md", "dls/Allgemein/a.txt.md",
+                              "dls/Tief/Ziel/e.txt.md"]

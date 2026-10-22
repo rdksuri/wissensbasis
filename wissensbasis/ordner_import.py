@@ -106,6 +106,23 @@ class OrdnerImport:
     def _url(self, sp_pfad: str) -> str | None:
         return f"{self.web_basis}{quote(sp_pfad)}" if self.web_basis else None
 
+    def _dateien(self):
+        """Dateien Ordner für Ordner liefern (statt erst alles aufzulisten),
+        damit bei grossen OneDrive-Ordnern sofort Fortschritt sichtbar ist.
+        Versteckte Ordner werden gar nicht erst betreten."""
+        for ordner, unterordner, dateien in os.walk(self.wurzel):
+            unterordner[:] = sorted(u for u in unterordner if not u.startswith("."))
+            rel = Path(ordner).relative_to(self.wurzel).as_posix()
+            if rel != "." and self.ordner_filter and not any(
+                ("/" + rel).startswith(o) or o.startswith("/" + rel + "/") for o in self.ordner_filter
+            ):
+                unterordner[:] = []
+                continue
+            log.info("Durchsuche %s (%d Dateien)", "/" if rel == "." else "/" + rel, len(dateien))
+            for name in sorted(dateien):
+                if not name.startswith("."):
+                    yield Path(ordner) / name
+
     def ausfuehren(self, bericht: Bericht) -> None:
         if not self.wurzel.is_dir():
             raise FileNotFoundError(f"Ordner für Quelle '{self.name}' nicht gefunden: {self.wurzel}")
@@ -117,12 +134,11 @@ class OrdnerImport:
                 bekannt[meta["sharepoint_id"]] = (pfad, meta, text)
 
         gesehen: set[str] = set()
-        for datei in sorted(self.wurzel.rglob("*")):
-            if not datei.is_file():
-                continue
+        gelesen = 0
+        for datei in self._dateien():
             rel = datei.relative_to(self.wurzel).as_posix()
             sp_pfad = "/" + rel
-            if any(t.startswith(".") for t in rel.split("/")) or datei.name.startswith("~$"):
+            if datei.name.startswith("~$"):
                 continue
             if not self._im_bereich(sp_pfad):
                 continue
@@ -141,6 +157,10 @@ class OrdnerImport:
                 continue  # unverändert – nichts lesen, nichts herunterladen
 
             war_nur_online = self._ist_nur_online(datei)
+            gelesen += 1
+            log.info("[%d] %s %s (%.1f MB)", gelesen,
+                     "Lade und wandle um:" if war_nur_online else "Wandle um:",
+                     sp_pfad, stat.st_size / 1024 / 1024)
             try:
                 text = nach_markdown(datei.name, datei.read_bytes())
             except Exception as fehler:  # noqa: BLE001 – ein Dokument darf den Lauf nicht abbrechen
