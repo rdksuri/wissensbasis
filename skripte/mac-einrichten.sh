@@ -35,7 +35,14 @@ uv --version
 
 schritt "2/5 Wissensbasis nach $ZIEL holen"
 if [[ -d "$ZIEL/.git" ]]; then
-  git -C "$ZIEL" pull --ff-only
+  git -C "$ZIEL" fetch origin "$BRANCH"
+  if ! git -C "$ZIEL" merge --ff-only "origin/$BRANCH"; then
+    # z. B. nach bereinigter Historie auf GitHub: Programmstand übernehmen.
+    # Unberührt bleiben config/lokal.yaml, .venv und die Dokumente in OneDrive;
+    # wissen/ und index/ werden im Schritt 5 neu erzeugt.
+    echo "Lokale Kopie weicht ab – wird auf den aktuellen Stand gesetzt."
+    git -C "$ZIEL" reset --hard "origin/$BRANCH"
+  fi
 elif [[ -f "$ZIEL/requirements.txt" ]]; then
   echo "Vorhanden (ohne git) – wird aktualisiert."
   tmp="$(mktemp -d)"
