@@ -11,8 +11,8 @@ quellen:
     site_pfad: /sites/INT-Rettungsdienst
     bibliothek: Dokumente
     ordner: []                              # leer = alle Kanäle, sonst z. B. ["/Allgemein"]
-    # macOS; "~" = eigener Benutzerordner (so steht kein Benutzername im Repo)
-    lokaler_pfad: '~/Library/CloudStorage/OneDrive-ORGANISATION/INT-Rettungsdienst - Dokumente'
+    # lokaler_pfad steht in config/lokal.yaml (nur auf dem eigenen Rechner,
+    # nicht im Repo) – Vorlage: config/lokal.beispiel.yaml
     web_basis: https://ksur.sharepoint.com/sites/INT-Rettungsdienst/Shared%20Documents   # bestätigt
 
   - name: dls                               # Kurzname, wird Ordnername unter wissen/

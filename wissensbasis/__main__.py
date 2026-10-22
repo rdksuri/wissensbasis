@@ -23,6 +23,25 @@ from .index import baue_index
 WURZEL = Path(__file__).resolve().parent.parent
 
 
+def lade_config(pfad: Path) -> dict:
+    """Liest die Konfiguration und führt config/lokal.yaml (nicht im Repo) hinein.
+
+    lokal.yaml enthält rechnerspezifische Angaben wie lokaler_pfad; Einträge
+    unter `quellen` werden über `name` mit den Quellen zusammengeführt.
+    """
+    config = yaml.safe_load(pfad.read_text(encoding="utf-8"))
+    lokal_datei = pfad.parent / "lokal.yaml"
+    if lokal_datei.exists():
+        lokal = yaml.safe_load(lokal_datei.read_text(encoding="utf-8")) or {}
+        nach_name = {q["name"]: q for q in config["quellen"]}
+        for eintrag in lokal.get("quellen") or []:
+            if eintrag.get("name") in nach_name:
+                nach_name[eintrag["name"]].update(eintrag)
+            else:
+                config["quellen"].append(eintrag)
+    return config
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="wissensbasis")
     p.add_argument("befehl", choices=["sync", "import-ordner", "index"])
@@ -32,7 +51,7 @@ def main(argv=None) -> int:
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
-    config = yaml.safe_load(Path(args.config).read_text(encoding="utf-8"))
+    config = lade_config(Path(args.config))
     basis = WURZEL / "wissen"
     max_zeichen = int((config.get("chunks") or {}).get("max_zeichen", 1500))
 

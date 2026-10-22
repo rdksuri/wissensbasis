@@ -149,3 +149,14 @@ def test_mac_freigabe_fehler_nur_einmal(tmp_path, monkeypatch, caplog):
     oi.speicher_freigeben(tmp_path / "b")
     assert len(aufrufe) == 1 and aufrufe[0][:2] == ["fileproviderctl", "evict"]
     assert "Speicherplatz freigeben" in caplog.text
+
+
+def test_lokale_config_wird_zusammengefuehrt(tmp_path):
+    from wissensbasis.__main__ import lade_config
+    (tmp_path / "sharepoint.yaml").write_text(
+        "quellen:\n  - name: a\n    web_basis: https://x\n", encoding="utf-8")
+    assert "lokaler_pfad" not in lade_config(tmp_path / "sharepoint.yaml")["quellen"][0]
+    (tmp_path / "lokal.yaml").write_text(
+        "quellen:\n  - name: a\n    lokaler_pfad: ~/OD\n", encoding="utf-8")
+    q = lade_config(tmp_path / "sharepoint.yaml")["quellen"][0]
+    assert q == {"name": "a", "web_basis": "https://x", "lokaler_pfad": "~/OD"}

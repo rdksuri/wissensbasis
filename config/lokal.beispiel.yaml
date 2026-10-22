@@ -1,0 +1,11 @@
+# Kopieren nach config/lokal.yaml und anpassen. config/lokal.yaml wird nicht
+# ins Repo hochgeladen (.gitignore) – hier stehen rechnerspezifische Angaben
+# wie der lokale OneDrive-Pfad. Einträge werden über den Namen der Quelle
+# mit config/sharepoint.yaml zusammengeführt.
+
+quellen:
+  - name: rettungsdienst
+    # macOS ("~" = eigener Benutzerordner):
+    lokaler_pfad: '~/Library/CloudStorage/OneDrive-ORGANISATION/INT-Rettungsdienst - Dokumente'
+    # Windows:
+    # lokaler_pfad: 'C:\Users\NAME\OneDrive - ORGANISATION\INT-Rettungsdienst - Dokumente'

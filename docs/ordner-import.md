@@ -51,14 +51,22 @@ python -m venv .venv
 
 ## 3. Konfiguration
 
-In `config/sharepoint.yaml` bei der Quelle `lokaler_pfad` und `web_basis`
-setzen, z. B.:
+Der lokale Pfad ist rechnerspezifisch und gehört **nicht** ins Repo. Er
+steht in `config/lokal.yaml` (per `.gitignore` ausgeschlossen):
+
+```bash
+cp config/lokal.beispiel.yaml config/lokal.yaml
+open -e config/lokal.yaml      # macOS; Windows: notepad config\lokal.yaml
+```
 
 ```yaml
-    lokaler_pfad: '~/Library/CloudStorage/OneDrive-ORGANISATION/INT-Rettungsdienst - Dokumente'   # macOS
-    # lokaler_pfad: 'C:\Users\NAME\OneDrive - …\INT-Rettungsdienst - Dokumente'                    # Windows
-    web_basis: https://ksur.sharepoint.com/sites/INT-Rettungsdienst/Shared%20Documents
+quellen:
+  - name: rettungsdienst
+    lokaler_pfad: '~/Library/CloudStorage/OneDrive-ORGANISATION/INT-Rettungsdienst - Dokumente'
 ```
+
+Die übrigen Angaben (z. B. `web_basis` für die Links zum Original) stehen
+in `config/sharepoint.yaml`.
 
 Pfad ermitteln: **macOS** – im Finder Rechtsklick mit gedrückter
 Wahltaste (⌥) auf den Ordner → „… als Pfadname kopieren“; `~` steht für den
